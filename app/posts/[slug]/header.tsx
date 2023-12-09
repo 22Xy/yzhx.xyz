@@ -61,8 +61,8 @@ export const Header: React.FC<Props> = ({ post, views }) => {
               title="View counter for this page"
               className={`duration-200 hover:font-medium flex items-center gap-1 ${
                 isIntersecting
-                  ? " text-zinc-300 hover:text-zinc-100"
-                  : "text-zinc-600 hover:text-zinc-900"
+                  ? "text-zinc-300 hover:text-zinc-100"
+                  : "text-zinc-600 hover:text-zinc-300"
               } `}
             >
               <Eye className="w-5 h-5" />{" "}
@@ -74,8 +74,8 @@ export const Header: React.FC<Props> = ({ post, views }) => {
               <Twitter
                 className={`w-6 h-6 duration-200 hover:font-medium ${
                   isIntersecting
-                    ? " text-zinc-300 hover:text-zinc-100"
-                    : "text-zinc-600 hover:text-zinc-900"
+                    ? "text-zinc-300 hover:text-zinc-100"
+                    : "text-zinc-600 hover:text-zinc-300"
                 } `}
               />
             </Link>
@@ -83,8 +83,8 @@ export const Header: React.FC<Props> = ({ post, views }) => {
               <Github
                 className={`w-6 h-6 duration-200 hover:font-medium ${
                   isIntersecting
-                    ? " text-zinc-300 hover:text-zinc-100"
-                    : "text-zinc-600 hover:text-zinc-900"
+                    ? "text-zinc-300 hover:text-zinc-100"
+                    : "text-zinc-600 hover:text-zinc-300"
                 } `}
               />
             </Link>
@@ -95,7 +95,7 @@ export const Header: React.FC<Props> = ({ post, views }) => {
             className={`duration-200 hover:font-medium ${
               isIntersecting
                 ? " text-zinc-300 hover:text-zinc-100"
-                : "text-zinc-600 hover:text-zinc-900"
+                : "text-zinc-600 hover:text-zinc-300"
             } `}
           >
             <ArrowLeft className="w-6 h-6 " />

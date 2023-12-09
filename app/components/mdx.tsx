@@ -11,7 +11,7 @@ const components = {
   h1: ({ className, ...props }) => (
     <h1
       className={clsx(
-        "mt-2 scroll-m-20 text-4xl font-bold tracking-tight text-zinc-100",
+        "mt-2 scroll-m-20 text-4xl font-bold tracking-tight text-zinc-200",
         className
       )}
       {...props}
@@ -20,7 +20,7 @@ const components = {
   h2: ({ className, ...props }) => (
     <h2
       className={clsx(
-        "mt-10 scroll-m-20 border-b border-b-zinc-200 pb-1 text-3xl font-semibold tracking-tight first:mt-0 text-zinc-100",
+        "mt-10 scroll-m-20 border-b border-b-zinc-200 pb-1 text-3xl font-semibold tracking-tight first:mt-0 text-zinc-200",
         className
       )}
       {...props}
@@ -29,7 +29,7 @@ const components = {
   h3: ({ className, ...props }) => (
     <h3
       className={clsx(
-        "mt-8 scroll-m-20 text-2xl font-semibold tracking-tight text-zinc-100",
+        "mt-8 scroll-m-20 text-2xl font-semibold tracking-tight text-zinc-200",
         className
       )}
       {...props}
@@ -38,7 +38,7 @@ const components = {
   h4: ({ className, ...props }) => (
     <h4
       className={clsx(
-        "mt-8 scroll-m-20 text-xl font-semibold tracking-tight text-zinc-100",
+        "mt-8 scroll-m-20 text-xl font-semibold tracking-tight text-zinc-200",
         className
       )}
       {...props}
@@ -47,7 +47,7 @@ const components = {
   h5: ({ className, ...props }) => (
     <h5
       className={clsx(
-        "mt-8 scroll-m-20 text-lg font-semibold tracking-tight text-zinc-100",
+        "mt-8 scroll-m-20 text-lg font-semibold tracking-tight text-zinc-200",
         className
       )}
       {...props}
@@ -56,7 +56,7 @@ const components = {
   h6: ({ className, ...props }) => (
     <h6
       className={clsx(
-        "mt-8 scroll-m-20 text-base font-semibold tracking-tight text-zinc-100",
+        "mt-8 scroll-m-20 text-base font-semibold tracking-tight text-zinc-200",
         className
       )}
       {...props}
@@ -65,9 +65,10 @@ const components = {
   a: ({ className, ...props }) => (
     <Link
       className={clsx(
-        "font-medium -100 underline underline-offset-4 text-zinc-100",
+        "font-medium -100 underline underline-offset-4 text-zinc-200",
         className
       )}
+      target="_blank"
       {...props}
     />
   ),
@@ -81,18 +82,27 @@ const components = {
     />
   ),
   ul: ({ className, ...props }) => (
-    <ul className={clsx("my-6 ml-6 list-disc", className)} {...props} />
+    <ul
+      className={clsx("my-6 ml-6 list-disc text-zinc-200", className)}
+      {...props}
+    />
   ),
   ol: ({ className, ...props }) => (
-    <ol className={clsx("my-6 ml-6 list-decimal", className)} {...props} />
+    <ol
+      className={clsx("my-6 ml-6 list-decimal text-zinc-200", className)}
+      {...props}
+    />
   ),
   li: ({ className, ...props }) => (
     <li className={clsx("mt-2", className)} {...props} />
   ),
+  strong: ({ className, ...props }) => (
+    <strong className={clsx("text-zinc-200", className)} {...props} />
+  ),
   blockquote: ({ className, ...props }) => (
     <blockquote
       className={clsx(
-        "mt-6 border-l-2 border-zinc-300 pl-6 italic text-zinc-200 [&>*]:text-zinc-300",
+        "mt-6 border-l-2 border-zinc-300 pl-6 italic text-zinc-200 [&>*]:text-zinc-400",
         className
       )}
       {...props}
@@ -105,7 +115,7 @@ const components = {
   }: React.ImgHTMLAttributes<HTMLImageElement>) => (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      className={clsx("rounded-md border border-zinc-200", className)}
+      className={clsx("rounded-md border border-zinc-200/70", className)}
       alt={alt}
       {...props}
     />
@@ -121,7 +131,7 @@ const components = {
   tr: ({ className, ...props }: React.HTMLAttributes<HTMLTableRowElement>) => (
     <tr
       className={clsx(
-        "m-0 border-t border-zinc-300 p-0 even:bg-zinc-100",
+        "m-0 border-t border-zinc-300 p-0 even:bg-zinc-200",
         className
       )}
       {...props}
@@ -148,7 +158,7 @@ const components = {
   pre: ({ className, ...props }) => (
     <pre
       className={clsx(
-        "mt-6 mb-4 overflow-x-auto rounded-lg bg-zinc-100 py-4",
+        "mt-6 mb-4 overflow-x-auto rounded-lg bg-zinc-200 py-4",
         className
       )}
       {...props}

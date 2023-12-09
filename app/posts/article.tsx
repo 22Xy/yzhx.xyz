@@ -11,7 +11,7 @@ export const Article: React.FC<Props> = ({ post, views }) => {
   return (
     <Link href={`/posts/${post.slug}`}>
       <article className="p-4 md:p-8">
-        <div className="flex justify-between gap-2 items-center">
+        <div className="flex justify-between gap-2 items-center mb-2">
           <span className="text-xs duration-1000 text-zinc-200 group-hover:text-white group-hover:border-zinc-200 drop-shadow-orange">
             {post.date ? (
               <time dateTime={new Date(post.date).toISOString()}>

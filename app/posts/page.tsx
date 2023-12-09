@@ -20,9 +20,11 @@ export default async function PostsPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const featured = allPosts.find((post) => post.slug === "steve-email")!;
-  const top2 = allPosts.find((post) => post.slug === "nov-2023-photos")!;
-  const top3 = allPosts.find((post) => post.slug === "dec-2023-photos")!;
+  const featured = allPosts.find(
+    (post) => post.slug === "zero-to-one-reading-notes-chinese"
+  )!;
+  const top2 = allPosts.find((post) => post.slug === "0xMacintosh.ca")!;
+  const top3 = allPosts.find((post) => post.slug === "steve-email")!;
   const sorted = allPosts
     .filter((p) => p.published)
     .filter(
