@@ -9,10 +9,10 @@ export const metadata: Metadata = {
     default: "yzhX",
     template: "%s | yzhX",
   },
-  description: "just a engineer",
+  description: "just an engineer",
   openGraph: {
     title: "yzhX",
-    description: "just a engineer",
+    description: "just an engineer",
     url: "https://yzhx.xyz",
     siteName: "yzhX",
     images: [
