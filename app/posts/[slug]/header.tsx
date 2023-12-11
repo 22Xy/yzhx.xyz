@@ -114,7 +114,7 @@ export const Header: React.FC<Props> = ({ post, views }) => {
           </div>
 
           <div className="mx-auto my-8 sm:mt-10 sm:mb-0 max-w-2xl lg:mx-0 lg:max-w-none">
-            <div className="grid gap-y-6 gap-x-8 text-base font-semibold leading-7 text-white grid-cols-2 md:flex lg:gap-x-10 ">
+            <div className="gap-y-6 gap-x-8 text-base font-semibold leading-7 text-white flex lg:gap-x-10">
               {links.map((link) => (
                 <Link target="_blank" key={link.label} href={link.href}>
                   {link.label} <span aria-hidden="true">&rarr;</span>
