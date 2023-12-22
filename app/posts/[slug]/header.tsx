@@ -10,6 +10,7 @@ type Props = {
     title: string;
     description: string;
     repository?: string;
+    author: string;
   };
 
   views: number;
@@ -111,6 +112,12 @@ export const Header: React.FC<Props> = ({ post, views }) => {
             <p className="mt-6 text-lg leading-8 text-zinc-300">
               {post.description}
             </p>
+            <div className="flex justify-center flex-row mt-4 text-lg leading-8 text-zinc-300">
+              <p className="mr-2">by</p>
+              <p className="text-white font-bold underline underline-offset-4">
+                {post.author}
+              </p>
+            </div>
           </div>
 
           <div className="mx-auto my-8 sm:mt-10 sm:mb-0 max-w-2xl lg:mx-0 lg:max-w-none">

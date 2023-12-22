@@ -42,6 +42,9 @@ export const Post = defineDocumentType(() => ({
     repository: {
       type: "string",
     },
+    author: {
+      type: "string",
+    },
   },
   computedFields,
 }));
