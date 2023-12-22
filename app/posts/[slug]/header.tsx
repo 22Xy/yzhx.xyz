@@ -10,7 +10,7 @@ type Props = {
     title: string;
     description: string;
     repository?: string;
-    author: string;
+    author?: string;
   };
 
   views: number;
