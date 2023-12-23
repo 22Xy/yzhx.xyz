@@ -113,7 +113,7 @@ export const Header: React.FC<Props> = ({ post, views }) => {
               {post.description}
             </p>
             <div className="flex justify-center flex-row mt-4 text-lg leading-8 text-zinc-300">
-              <p className="mr-2">by</p>
+              <p className="mr-2.5">by</p>
               <p className="text-white font-bold underline underline-offset-4">
                 {post.author}
               </p>

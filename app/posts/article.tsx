@@ -31,7 +31,11 @@ export const Article: React.FC<Props> = ({ post, views }) => {
         <h2 className="z-20 text-xl font-medium duration-1000 lg:text-3xl text-zinc-200 group-hover:text-white font-display">
           {post.title}
         </h2>
-        <p className="z-20 mt-4 text-sm  duration-1000 text-zinc-400 group-hover:text-zinc-200">
+        <div className="flex flex-row leading-8 z-20 duration-1000 text-zinc-400 group-hover:text-zinc-200">
+          <p className="mr-2">by</p>
+          <p className="font-bold text-zinc-100">{post.author}</p>
+        </div>
+        <p className="z-20 mt-4 text-sm duration-1000 text-zinc-400 group-hover:text-zinc-200">
           {post.description}
         </p>
       </article>

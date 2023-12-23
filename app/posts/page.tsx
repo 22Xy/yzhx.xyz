@@ -81,6 +81,10 @@ export default async function PostsPage() {
                 >
                   {featured.title}
                 </h2>
+                <div className="flex flex-row leading-8 z-20 duration-1000 text-zinc-400 group-hover:text-zinc-200">
+                  <p className="mr-2">by</p>
+                  <p className="font-bold text-zinc-100">{featured.author}</p>
+                </div>
                 <p className="mt-4 leading-8 duration-150 text-zinc-400 group-hover:text-zinc-300">
                   {featured.description}
                 </p>
