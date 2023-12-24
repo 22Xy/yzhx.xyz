@@ -1,0 +1,335 @@
+---
+title: CREATE, CREATE2, CREATE3
+description: "understanding Solidity's contract creation: CREATE, CREATE2, and CREATE3"
+published: true
+date: 2023-12-22
+author: "0xMacintosh"
+url: https://0xmacintosh.ca/blog/contract-creation
+---
+
+## Introduction
+
+When interacting on Ethereum, one is often troubled by various contract addresses that seem to have no pattern, but in reality, these addresses are a predetermined matter before the smart contract is created.
+
+There are two types of accounts on Ethereum, one is the External Owned Account (EOA), and the other is the Contract Account (CA). External accounts are determined by private keys, so on different Ethereum-equivalent chains, the same private key can control the same address. For CAs, however, there is a specific rule for the generation of their addresses. In production practice, when deploying contracts across multiple chains, there is always a desire for them to have the same address. This article will summarize the method of contract address generation on Ethereum and some existing tools, and explain possible application scenarios.
+
+## CREATE: The Foundation of Contract Creation
+
+`CREATE` is an Ethereum opcode used for contract creation. It is part of the original Ethereum implementation and is used to deploy a new smart contract on the blockchain. By default, when we deploy a contract, the address we get is related to our current `address` and the `nonce` value of the current transaction. Numerically, it is equal to:
+
+```solidity
+bytes20(sha3(rlp.encode(address,nonce)))
+```
+
+### Deploying a Contract through EOA
+
+Deploying a contract through an External Owned Account (EOA) is a very common practice. First, calculate the contract address `to` be generated using the formula mentioned above, use this as the to parameter of the transaction, and then use the compiled bytecode as the `data` parameter of the transaction. Sign and broadcast it, and that becomes a transaction for deploying a contract.
+
+```json
+{
+  "to": <calculatedContractAddress>,
+  "data": <bytecode>,
+  "gasPrice": ...,
+  "gasLimit": ...
+}
+```
+
+### Deploying Contracts Through Other Contracts
+
+Deploying contracts through other contracts is often seen in a factory pattern. It only requires 'new'ing an imported contract within the contract code, and the creation is automatically completed when this method is called.
+
+After [EIP-161](https://eips.ethereum.org/EIPS/eip-161), the nonce for smart contracts starts from 1 and is incremented only when a contract is created.
+
+```solidity
+function deployContract() external {
+    Contract addr = new Contract();
+}
+```
+
+Alternatively, the `CREATE` opcode can be directly called through inline `assembly` to create a contract:
+
+```solidity
+function deployContract() external {
+    bytes memory bytecode = type(Contract).creationCode;
+    address addr;
+    assembly {
+        addr := create(0, add(bytecode, 32), mload(bytecode))
+    }
+}
+```
+
+A drawback of the above two methods is that the factory contract itself can be very large, as it contains all the bytecode of the child contracts. Deploying the factory contract can consume a lot of gas. A better alternative might be using [ERC1167](https://eips.ethereum.org/EIPS/eip-1167).
+
+## CREATE2: Predictable Addresses
+
+`CREATE2` was introduced in [EIP-1014](https://eips.ethereum.org/EIPS/eip-1014) to overcome some limitations of `CREATE`. The method of using the `address + nonce` is indeed useful, nearly eliminating the possibility of duplication. However, it introduces a problem: it's difficult to maintain consistent contract addresses across multiple chains because keeping the `nonce` consistent is challenging unless a dedicated address is used for deployment. Hence, `CREATE2` was introduced, an EVM opcode that generates a contract address independent of the sender's nonce.
+
+The contract address obtained with `CREATE2` can be expressed as:
+
+```solidity
+bytes20(sha3(rlp.encode(address,bytecode,salt)))
+```
+
+Since `CREATE2` is an opcode, it can only be implemented through the method of deploying contracts through other contracts. A simple example is:
+
+```solidity
+function deployContractByCreate2() external {
+    bytes32 salt = bytes32(uint256(1));
+    Contract addr = new Contract{ salt: salt }();
+}
+```
+
+Alternatively, the `CREATE2` opcode can be directly invoked using assembly:
+
+```solidity
+function deployContractByCreate2Assembly() external {
+    address addr;
+    bytes memory bytecode = type(Contract).creationCode;
+    bytes32 salt = bytes32(uint256(1));
+    assembly {
+        addr := create2(0, add(bytecode, 32), mload(bytecode), salt)
+    }
+}
+```
+
+The above two examples require the bytecode of the child contract to be within the factory, which greatly limits the variety of deployable contracts. Therefore, it's worth considering passing the bytecode of the contract to be deployed as a parameter, creating a relatively universal `create2factory`.
+
+### Public CREATE2 Factory
+
+This type of universal create2 factory can easily become a common infrastructure. As long as this factory has the same address on different chains, using the same bytecode and salt will ensure the deployment of contracts with the same address on different chains. A classic example is the Deterministic Deployment Proxy, which uses pure `Yul` to write an efficient deployer contract.
+
+```solidity
+object "Proxy" {
+    // deployment code
+    code {
+        let size := datasize("runtime")
+        datacopy(0, dataoffset("runtime"), size)
+        return(0, size)
+    }
+    object "runtime" {
+        // deployed code
+        code {
+            calldatacopy(0, 32, sub(calldatasize(), 32))
+            let result := create2(callvalue(), 0, sub(calldatasize(), 32), calldataload(0))
+            if iszero(result) { revert(0, 0) }
+            mstore(0, result)
+            return(12, 20)
+        }
+    }
+}
+```
+
+In practical application, a key issue arises: ensuring that the factory's address is the same on different chains. What if there is no factory address deployed on a certain chain?
+
+Since the Deterministic Deployment Proxy predates [EIP-155](https://eips.ethereum.org/EIPS/eip-155), it's possible to use a unified, keyless transaction to send the exact same transaction on different chains, thereby deploying the same factory address.
+
+Nowadays, it is more common for a centralized individual or organization to control a specific private key, thus deploying the same factory on different chains, such as the Safe’s [safe-singleton-factory](https://github.com/safe-global/safe-singleton-factory).
+
+### Deploying Contracts with Access Control
+
+Often, the contracts we deploy include some form of access control. OpenZeppelin's `Ownable`, by default, sets the `msg.sender` as the `owner` (which will be optimized in [version 5.0](https://github.com/OpenZeppelin/openzeppelin-contracts/issues/2639)). Directly inheriting OpenZeppelin's Ownable contract would assign the owner to the factory. Therefore, it is necessary to pass the owner as a constructor parameter, for example:
+
+**Default OZ Ownable**
+
+```solidity
+/**
+  * @dev Initializes the contract setting the deployer as the initial owner.
+  */
+
+constructor() {
+    _transferOwnership(_msgSender());
+}
+```
+
+Adding `owner` to the constructor
+
+```solidity
+/**
+  * @dev Initializes the contract with a manual owner.
+  */
+constructor(address owner_) {
+    _transferOwnership(owner_);
+}
+```
+
+### Integration with Hardhat-deploy
+
+`hardhat-deploy` directly supports deterministic deployment. You can configure the specific chain's factory address in `hardhat.config.ts`, possibly using an address from the `safe-singleton-factory`. Then, specify the deterministicDeployment's salt in `xxx_deploy_xxx.ts`.
+
+```js
+await deploy("MyContract", {
+  from: deployer,
+  log: true,
+  deterministicDeployment: keccak256(formatBytes32String("A salt")),
+});
+```
+
+### Sample Usage - Counterfactual Instantiation in State Channels
+
+A gaming platform plans to use state channels for fast, off-chain game interactions. It requires the ability to predict the address of a game contract before it is actually deployed on-chain.
+
+```solidity
+contract GameFactory {
+    function deployGame(bytes32 salt, bytes memory gameContractCode) public {
+        address predictedAddress = address(uint160(uint256(keccak256(abi.encodePacked(
+            byte(0xff),
+            address(this),
+            salt,
+            keccak256(gameContractCode)
+        )))));
+
+        // Use the predictedAddress for off-chain interactions
+
+        // Deploy the contract when needed
+        address newGame = address(new Contract{salt: salt}(gameContractCode));
+        require(newGame == predictedAddress, "Address mismatch");
+    }
+}
+```
+
+Here, `GameFactory` uses `CREATE2` to deploy a game contract with a predictable address. The address is calculated off-chain and used in the state channel. When needed, the contract is deployed on-chain at the predetermined address.
+
+### CREATE2 & Layer-2 Solutions
+
+CREATE2 has been hailed as the foundation of Layer-2 solutions due to its predictable and deterministic nature in contract address generation. This predictability is vital for several reasons:
+
+1. Counterfactual Instantiation: Layer-2 solutions often use state channels, where transactions are conducted off-chain and only the final state is recorded on-chain. CREATE2 enables counterfactual instantiation, allowing the interaction with contracts that haven't yet been deployed on-chain. This capability reduces initial deployment costs, as contracts are only deployed when absolutely necessary.
+
+2. State Channel Optimization: In state channels, participants need assurance that a certain contract will exist with a specific address, even if it's not yet deployed. CREATE2 provides this assurance, as the address can be precomputed and agreed upon by all parties.
+
+3. Upgradeable Contracts: Layer-2 solutions require flexibility, including the ability to upgrade contracts without changing their address. CREATE2's deterministic address generation means that even if a contract is destroyed and [redeployed](https://docs.openzeppelin.com/cli/2.6/deploying-with-create2), its address remains the same, preserving the integrity and continuity of the contract's role within the Layer-2 framework.
+
+## CREATE3: Expanding the Horizon
+
+`CREATE3` is a new concept proposed in [EIP-3171](https://github.com/ethereum/EIPs/pull/3171), mainly considering that bytecode, as a variable influencing the address, is too large and costly to compute directly on the blockchain. `CREATE3` aims to ensure that the address of the contract created is solely related to the sender and salt. However, since this goal can be achieved through the combination of CREATE and CREATE2, it is not an essential opcode, and thus the EIP was ultimately not adopted.
+
+[Sequence's implementation](https://github.com/0xsequence/create3) of `CREATE3` is likely one of the earliest. It requires two steps:
+
+1. Inside the factory, use the `CREATE2` method to create a proxy contract whose sole function is to deploy another contract:
+
+```solidity
+address proxy;
+assembly {
+    proxy := create2(0, add(creationCode, 32), mload(creationCode), _salt)
+}
+```
+
+2. Call the newly deployed proxy contract to deploy the actual contract we want:
+
+```solidity
+(bool success,) = proxy.call(_creationCode);
+```
+
+The proxy is deployed via CREATE2, so its address is only related to the factory's address and the `salt`. The actual contract is deployed via CREATE, so its address is only related to the proxy's address and the proxy's nonce. Since the proxy is newly deployed, its nonce is definitively `1`. Therefore, the address of the contract we want to deploy is only related to the factory's address and the salt we input. This can be expressed as:
+
+```solidity
+bytes20(sha3(rlp.encode(bytes20(sha3(rlp.encode(address,proxy_bytecode,salt))),1)))
+```
+
+### Steps
+
+1. Assuming a `CREATE3` Factory already exists on multiple chains and the addresses on each chain are the same.
+2. Developers send a deployment transaction to the `CREATE3` Factory, which includes a `salt` and the `init_code`/`creationCode`/`bytecode` of the new contract.
+3. In the `CREATE3` Factory, a contract with `fixed_init_code` (bytecode of Proxy contract) is first deployed using `CREATE2`, referred to as the `CREATE2` Proxy. Since the `sender_address` (`CREATE3` Factory), salt, and fixed_init_code are the same, the addresses of the `CREATE2` Proxy on each chain are also the same.
+4. The `CREATE3` Factory then calls the newly deployed `CREATE2` Proxy, whose `deployed_code` contains the `CREATE` opcode to deploy the new contract. Since the sender_address (`CREATE2` Proxy) and sender_nonce (starting from 1) are the same, the addresses of the new contract on each chain are also the same. It is important to note that this `CREATE2` Proxy is only used for this deployment transaction, meaning a different salt will be used next time to deploy another `CREATE2` Proxy for other new contracts.
+
+The above steps are illustrated in the following diagram. Since the parameters obtained by `CREATE` and `CREATE2` are already determined before the deployment transaction is sent, the address of the new contract can also be predetermined.
+
+<img src="/img/blog/create3.jpg" />
+
+From the above diagram, the calculation of the new contract address is as follows. Therefore, from the user's perspective, the factors that affect the new address are the `salt` provided by themselves and the `create3_factory_address` they interact with.
+
+```solidity
+create2_proxy_address = keccak256(0xff + create3_factory_address + salt + keccak256(fixed_init_code))[12:]
+
+new_address = keccak256(rlp([create2_proxy_address, 1]))[12:]
+```
+
+### fixed_init_code
+
+An interesting part is the `fixed_init_code` of the `CREATE2` Proxy set in Step 3:
+
+> 67\__**36_3d_3d_37_36_3d_34_f0**_\_3d_52_60_08_60_18_f3
+
+```
+//--------------------------------------------------------------------------------//
+// Opcode     | Opcode + Arguments    | Description      | Stack View             //
+//--------------------------------------------------------------------------------//
+// 0x36       |  0x36                 | CALLDATASIZE     | size                   //
+// 0x3d       |  0x3d                 | RETURNDATASIZE   | 0 size                 //
+// 0x3d       |  0x3d                 | RETURNDATASIZE   | 0 0 size               //
+// 0x37       |  0x37                 | CALLDATACOPY     |                        //
+// 0x36       |  0x36                 | CALLDATASIZE     | size                   //
+// 0x3d       |  0x3d                 | RETURNDATASIZE   | 0 size                 //
+// 0x34       |  0x34                 | CALLVALUE        | value 0 size           //
+// 0xf0       |  0xf0                 | CREATE           | newContract            //
+//--------------------------------------------------------------------------------//
+// Opcode     | Opcode + Arguments    | Description      | Stack View             //
+//--------------------------------------------------------------------------------//
+// 0x67       |  0x67XXXXXXXXXXXXXXXX | PUSH8 bytecode   | bytecode               //
+// 0x3d       |  0x3d                 | RETURNDATASIZE   | 0 bytecode             //
+// 0x52       |  0x52                 | MSTORE           |                        //
+// 0x60       |  0x6008               | PUSH1 08         | 8                      //
+// 0x60       |  0x6018               | PUSH1 18         | 24 8                   //
+// 0xf3       |  0xf3                 | RETURN           |                        //
+//--------------------------------------------------------------------------------//
+```
+
+In the above [code snippet](https://github.com/transmissions11/solmate/blob/4b47a19038b798b4a33d9749d25e570443520647/src/utils/CREATE3.sol#L12C63-L12C63), the 8 italic opcodes from _36_ to _f0_ represent the `deployed_code` stored on the chain, which is the content of the `CREATE2` Proxy contract. It's evident that the operation from _36_ to _f0_ simply copies the new contract's `init_code` from `calldata` to `memory` and then calls `CREATE` with `msg.value` to deploy the new contract.
+
+The sequence from _67_ to _f3_ in the code snippet is used to place the `deployed_code` in the return data region to complete the deployment of the `CREATE2` Proxy.
+
+- Tip 1: Using `RETURNDATASIZE` (0x3d) to push `0` onto the `stack` is slightly more gas-efficient than `PUSH1 0`.
+- Tip 2: `CREATE` (0xf0) puts the new contract's address back on the `stack`, but the next step does not return this new address. Instead, the new address is calculated in the CREATE3 Factory and checked by verifying that `code.length > 0`. Returning the new address would increase the `deployed_code` from 8 to 15 opcodes, thus decreasing the size of the `CREATE2` Proxy and lowering the gas cost for deploying the contract. The method for calculating the new address starts by determining the `CREATE2` Proxy's address, then performing [RLP encoding](https://ethereum.org/en/developers/docs/data-structures-and-encoding/rlp/#definition) with nonce (1), as shown in the [code snippet](https://github.com/transmissions11/solmate/blob/4b47a19038b798b4a33d9749d25e570443520647/src/utils/CREATE3.sol#L63) below:
+
+```solidity
+address proxy = keccak256(
+    abi.encodePacked(
+        // Prefix:
+        bytes1(0xFF),
+        // Creator:
+        creator,
+        // Salt:
+        salt,
+        // Bytecode hash:
+        PROXY_BYTECODE_HASH
+    )
+).fromLast20Bytes();
+
+return
+    keccak256(
+        abi.encodePacked(
+            // 0xd6 = 0xc0 (short RLP prefix) + 0x16 (length of: 0x94 ++ proxy ++ 0x01)
+            // 0x94 = 0x80 + 0x14 (0x14 = the length of an address, 20 bytes, in hex)
+            hex"d6_94",
+            proxy,
+            hex"01" // Nonce of the proxy contract (1)
+        )
+    ).fromLast20Bytes();
+```
+
+### CREATE3 Factory
+
+In step 1, there's an assumption that a `CREATE3` Factory with the same address already exists on each chain.
+
+One approach is to use a new EOA and acquire native tokens on each chain to pay for gas. Then, the first transaction (nonce = 0) is sent on each chain to deploy the `CREATE3` Factory, ensuring that the `CREATE3` Factory addresses are the same across all chains.
+
+Another method is to use someone else's already deployed `CREATE3` Factory on each chain, such as the one found at https://github.com/ZeframLou/create3-factory. SKYBITDEV3 also listed some [CREATE3 factory choices](https://github.com/SKYBITDev3/SKYBIT-Keyless-Deployment?tab=readme-ov-file#create3-factory-choices) you can refer to. some This factory uses `msg.sender` and `salt` for an additional keccak256 calculation, ensuring that different users won't generate the same new addresses. The downside is that if you want to deploy on a new chain without a CREATE3 Factory, you'll have to rely on the original deployer.
+
+If the new contract deployed uses `msg.sender` in its `constructor`, be aware that `msg.sender` will be the `CREATE2` Proxy! A common example is OpenZeppelin's `Ownable`. Necessary modifications must be made, such as executing `transferOwnership` at the end of the `constructor`.
+
+## Conclusion
+
+`CREATE`, `CREATE2`, and `CREATE3` each serve distinct purposes in the Solidity ecosystem. While `CREATE` offers a basic, reliable method for contract creation, `CREATE2` adds a layer of predictability and flexibility, essential for advanced development patterns such as upgradeable contracts and layer 2 solutions. `CREATE3`, though not an official opcode, pushes the boundaries further, enabling sophisticated contract deployment strategies to ensure that the address of the contract created is solely related to the sender and salt.
+
+## Resource
+
+- https://github.com/0xsequence/create3
+- https://medium.com/@wiasliaw/eip-3171-create3-opcode-81d8a43e6eb0
+- https://github.com/SKYBITDev3/SKYBIT-Keyless-Deployment
+- https://github.com/ZeframLou/create3-factory/tree/main
+- https://medium.com/@0xTraub/it-wont-byte-learning-not-to-fear-assembly-through-omni-chain-deployments-5ca82253c224
+- https://medium.com/taipei-ethereum-meetup/create3-deploy-contract-multichain-c92de4241614
+- https://twitter.com/0xbtk/status/1703461269972423038
+- https://ethereum.stackexchange.com/questions/145240/what-are-the-differences-between-create2-and-create3
+- https://noyx.io/posts/predictable-ethereum-address
