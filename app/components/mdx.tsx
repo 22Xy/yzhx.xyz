@@ -167,7 +167,7 @@ const components = {
   code: ({ className, ...props }) => (
     <code
       className={clsx(
-        "relative rounded border bg-zinc-200/80 py-[0.2rem] px-[0.3rem] font-mono text-sm text-zinc-700",
+        "rounded border bg-zinc-200/80 py-[0.2rem] px-[0.3rem] font-mono text-sm text-zinc-700",
         className
       )}
       {...props}

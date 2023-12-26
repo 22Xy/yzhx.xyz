@@ -50,10 +50,10 @@ export const Header: React.FC<Props> = ({ post, views }) => {
       <Particles className="absolute inset-0 animate-fade-in" quantity={53} />
 
       <div
-        className={`fixed inset-x-0 top-0 z-50 backdrop-blur lg:backdrop-blur-none duration-200 border-b lg:bg-transparent ${
+        className={`fixed inset-x-0 top-0 z-50 backdrop-blur  duration-200 border-b  ${
           isIntersecting
             ? "bg-zinc-900/0 border-transparent"
-            : "bg-white/10  border-zinc-200 lg:border-transparent"
+            : "bg-zinc-900/500  border-zinc-800 "
         }`}
       >
         <div className="container flex flex-row-reverse items-center justify-between p-6 mx-auto">

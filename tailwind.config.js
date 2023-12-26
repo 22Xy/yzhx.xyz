@@ -29,7 +29,7 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-unifont)", ...defaultTheme.fontFamily.sans],
+        sans: ["var(--font-unifont)"],
         display: ["var(--font-unifont)"],
       },
       backgroundImage: {

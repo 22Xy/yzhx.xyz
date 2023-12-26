@@ -235,7 +235,7 @@ bytes20(sha3(rlp.encode(bytes20(sha3(rlp.encode(address,proxy_bytecode,salt))),1
 
 The above steps are illustrated in the following diagram. Since the parameters obtained by `CREATE` and `CREATE2` are already determined before the deployment transaction is sent, the address of the new contract can also be predetermined.
 
-<img src="/img/blog/create3.jpg" />
+![create3](/create3.jpg)
 
 From the above diagram, the calculation of the new contract address is as follows. Therefore, from the user's perspective, the factors that affect the new address are the `salt` provided by themselves and the `create3_factory_address` they interact with.
 
