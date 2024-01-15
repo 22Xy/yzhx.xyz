@@ -30,7 +30,7 @@ export default function Home() {
       <Particles className="absolute inset-0 animate-fade-in" quantity={53} />
 
       <h1 className="z-10 text-8xl text-transparent duration-1000 cursor-default bg-white text-zinc-200 text-edge-outline animate-title font-display sm:text-9xl whitespace-nowrap bg-clip-text pb-4 font-bold">
-        yzhX
+        22X
       </h1>
 
       <div className="hidden w-screen h-px animate-glow md:block animate-fade-right bg-gradient-to-r from-zinc-300/0 via-zinc-300/90 to-zinc-300/0" />

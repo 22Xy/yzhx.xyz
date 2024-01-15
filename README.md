@@ -8,11 +8,11 @@ My personal website, built with [Next.js](https://nextjs.org/), [Tailwind CSS](h
 ## Running Locally
 
 ```sh-session
-git clone https://github.com/yzhxxyz/yzhx.xyz.git
+git clone https://github.com/22Xy/yzhx.xyz.git
 cd yzhx.xyz
 ```
 
-Create a `.env` file similar to [`.env.example`](https://github.com/yzhxxyz/yzhx.xyz/blob/main/.env.example).
+Create a `.env` file similar to [`.env.example`](https://github.com/22Xy/yzhx.xyz/blob/main/.env.example).
 
 Then install dependencies and run the development server:
 
