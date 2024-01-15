@@ -71,7 +71,7 @@ export const Header: React.FC<Props> = ({ post, views }) => {
                 views
               )}
             </span>
-            <Link target="_blank" href="https://twitter.com/22X_____">
+            <Link target="_blank" href="https://twitter.com/to_22X">
               <Twitter
                 className={`w-6 h-6 duration-200 hover:font-medium ${
                   isIntersecting
