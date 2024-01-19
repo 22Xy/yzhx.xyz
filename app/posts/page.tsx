@@ -24,7 +24,7 @@ export default async function PostsPage() {
     (post) => post.slug === "zero-to-one-reading-notes-chinese"
   )!;
   const top2 = allPosts.find((post) => post.slug === "contract-creation")!;
-  const top3 = allPosts.find((post) => post.slug === "steve-email")!;
+  const top3 = allPosts.find((post) => post.slug === "picking-career")!;
   const sorted = allPosts
     .filter((p) => p.published)
     .filter(
@@ -55,7 +55,7 @@ export default async function PostsPage() {
           <Card>
             <Link href={`/posts/${featured.slug}`}>
               <article className="relative w-full h-full p-4 md:p-8">
-                <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="text-xs text-zinc-100">
                     {featured.date ? (
                       <time dateTime={new Date(featured.date).toISOString()}>
@@ -85,7 +85,7 @@ export default async function PostsPage() {
                   <p className="mr-2">by</p>
                   <p className="font-bold text-zinc-100">{featured.author}</p>
                 </div>
-                <p className="mt-4 leading-8 duration-150 text-zinc-400 group-hover:text-zinc-300">
+                <p className="mt-3 leading-8 duration-150 text-zinc-400 group-hover:text-zinc-300">
                   {featured.description}
                 </p>
                 <div className="absolute bottom-4 md:bottom-8">
