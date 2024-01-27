@@ -23,8 +23,8 @@ export default async function PostsPage() {
   const featured = allPosts.find(
     (post) => post.slug === "zero-to-one-reading-notes-chinese"
   )!;
-  const top2 = allPosts.find((post) => post.slug === "contract-creation")!;
-  const top3 = allPosts.find((post) => post.slug === "picking-career")!;
+  const top2 = allPosts.find((post) => post.slug === "2023-rewind")!;
+  const top3 = allPosts.find((post) => post.slug === "contract-creation")!;
   const sorted = allPosts
     .filter((p) => p.published)
     .filter(
