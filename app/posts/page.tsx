@@ -20,11 +20,9 @@ export default async function PostsPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const featured = allPosts.find(
-    (post) => post.slug === "zero-to-one-reading-notes-chinese"
-  )!;
-  const top2 = allPosts.find((post) => post.slug === "2023-rewind")!;
-  const top3 = allPosts.find((post) => post.slug === "contract-creation")!;
+  const featured = allPosts.find((post) => post.slug === "2023-rewind")!;
+  const top2 = allPosts.find((post) => post.slug === "contract-creation")!;
+  const top3 = allPosts.find((post) => post.slug === "ethernaut-walkthrough")!;
   const sorted = allPosts
     .filter((p) => p.published)
     .filter(
