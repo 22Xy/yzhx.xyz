@@ -22,7 +22,7 @@ export default async function PostsPage() {
 
   const featured = allPosts.find((post) => post.slug === "2023-rewind")!;
   const top2 = allPosts.find((post) => post.slug === "contract-creation")!;
-  const top3 = allPosts.find((post) => post.slug === "ethernaut-walkthrough")!;
+  const top3 = allPosts.find((post) => post.slug === "living-in-simulation")!;
   const sorted = allPosts
     .filter((p) => p.published)
     .filter(
