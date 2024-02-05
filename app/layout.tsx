@@ -9,15 +9,15 @@ export const metadata: Metadata = {
     default: "22X",
     template: "%s | 22X",
   },
-  description: "just an engineer",
+  description: "just a hacker & a painter",
   openGraph: {
     title: "22X",
-    description: "just an engineer",
-    url: "https://yzhx.xyz",
+    description: "just a hacker & a painter",
+    url: "https://22x.to",
     siteName: "22X",
     images: [
       {
-        url: "https://yzhx.xyz/og.png",
+        url: "https://22x.to/og.png",
         width: 1920,
         height: 1080,
       },
