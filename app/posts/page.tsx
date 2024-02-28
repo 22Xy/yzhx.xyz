@@ -20,9 +20,9 @@ export default async function PostsPage() {
     return acc;
   }, {} as Record<string, number>);
 
-  const featured = allPosts.find((post) => post.slug === "2023-rewind")!;
+  const featured = allPosts.find((post) => post.slug === "living-in-simulation")!;
   const top2 = allPosts.find((post) => post.slug === "contract-creation")!;
-  const top3 = allPosts.find((post) => post.slug === "living-in-simulation")!;
+  const top3 = allPosts.find((post) => post.slug === "2023-rewind")!;
   const sorted = allPosts
     .filter((p) => p.published)
     .filter(
