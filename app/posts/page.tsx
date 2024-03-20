@@ -15,12 +15,17 @@ export default async function PostsPage() {
     await redis.mget<number[]>(
       ...allPosts.map((p) => ["pageviews", "posts", p.slug].join(":"))
     )
-  ).reduce((acc, v, i) => {
-    acc[allPosts[i].slug] = v ?? 0;
-    return acc;
-  }, {} as Record<string, number>);
+  ).reduce(
+    (acc, v, i) => {
+      acc[allPosts[i].slug] = v ?? 0;
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
-  const featured = allPosts.find((post) => post.slug === "living-in-simulation")!;
+  const featured = allPosts.find(
+    (post) => post.slug === "reflections-in-the-bull-run-mirror"
+  )!;
   const top2 = allPosts.find((post) => post.slug === "contract-creation")!;
   const top3 = allPosts.find((post) => post.slug === "2023-rewind")!;
   const sorted = allPosts
@@ -48,7 +53,6 @@ export default async function PostsPage() {
           <p className="mt-4 text-zinc-400">posts worth reading</p>
         </div>
         <div className="w-full h-px bg-zinc-800" />
-
         <div className="grid grid-cols-1 gap-8 mx-auto lg:grid-cols-2 ">
           <Card>
             <Link href={`/posts/${featured.slug}`}>
@@ -104,8 +108,8 @@ export default async function PostsPage() {
           </div>
         </div>
         <div className="hidden w-full h-px md:block bg-zinc-800" />
-
-        <div className="grid grid-cols-1 gap-4 mx-auto lg:mx-0 md:grid-cols-3">
+        // Desktop
+        <div className="hidden gap-4 mx-auto lg:mx-0 md:grid-cols-3">
           <div className="grid grid-cols-1 gap-4">
             {sorted
               .filter((_, i) => i % 3 === 0)
@@ -133,6 +137,16 @@ export default async function PostsPage() {
                 </Card>
               ))}
           </div>
+        </div>
+        // Mobile
+        <div className="grid grid-cols-1 md:hidden gap-4 mx-auto lg:mx-0">
+          {sorted.map((post) => (
+            <div className="col-span-1">
+              <Card key={post.slug}>
+                <Article post={post} views={views[post.slug] ?? 0} />
+              </Card>
+            </div>
+          ))}
         </div>
       </div>
     </div>
