@@ -108,8 +108,8 @@ export default async function PostsPage() {
           </div>
         </div>
         <div className="hidden w-full h-px md:block bg-zinc-800" />
-        // Desktop
-        <div className="hidden gap-4 mx-auto lg:mx-0 md:grid-cols-3">
+        {/* Desktop */}
+        <div className="hidden md:grid gap-4 mx-auto lg:mx-0 md:grid-cols-3">
           <div className="grid grid-cols-1 gap-4">
             {sorted
               .filter((_, i) => i % 3 === 0)
@@ -138,7 +138,7 @@ export default async function PostsPage() {
               ))}
           </div>
         </div>
-        // Mobile
+        {/* Mobile */}
         <div className="grid grid-cols-1 md:hidden gap-4 mx-auto lg:mx-0">
           {sorted.map((post) => (
             <div className="col-span-1">
